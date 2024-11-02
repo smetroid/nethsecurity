@@ -6,7 +6,7 @@
 include $(TOPDIR)/rules.mk
  
 PKG_NAME:=ns-api
-PKG_VERSION:=1.0.3
+PKG_VERSION:=2.0.2
 PKG_RELEASE:=1
  
 PKG_BUILD_DIR:=$(BUILD_DIR)/ns-api-$(PKG_VERSION)
@@ -39,6 +39,7 @@ define Package/ns-api/postinst
 if [ -z "$${IPKG_INSTROOT}" ]; then
   /etc/init.d/rpcd restart
 fi
+/usr/share/ns-api/remove-pppoe-keepalive
 exit 0
 endef
 
@@ -46,7 +47,6 @@ define Package/ns-api/postrm
 #!/bin/sh
 if [ -z "$${IPKG_INSTROOT}" ]; then
   /etc/init.d/rpcd restart
-  /etc/init.d/ns-api-server reload
 fi
 exit 0
 endef
@@ -59,6 +59,7 @@ endef
 define Package/ns-api/install
 	$(INSTALL_DIR) $(1)/usr/libexec/rpcd/
 	$(INSTALL_DIR) $(1)/usr/share/rpcd/acl.d/
+	$(INSTALL_DIR) $(1)/usr/share/ns-api/
 	$(INSTALL_DIR) $(1)/usr/bin/
 	$(INSTALL_DIR) $(1)/usr/sbin/
 	$(INSTALL_DIR) $(1)/usr/libexec/ns-api/
@@ -81,6 +82,8 @@ define Package/ns-api/install
 	$(INSTALL_DATA) ./files/ns.flashstart.json $(1)/usr/share/rpcd/acl.d/
 	$(INSTALL_BIN) ./files/ns.dpireport $(1)/usr/libexec/rpcd/
 	$(INSTALL_DATA) ./files/ns.dpireport.json $(1)/usr/share/rpcd/acl.d/
+	$(INSTALL_BIN) ./files/ns.report $(1)/usr/libexec/rpcd/
+	$(INSTALL_DATA) ./files/ns.report.json $(1)/usr/share/rpcd/acl.d/
 	$(INSTALL_BIN) ./files/ns.dedalo $(1)/usr/libexec/rpcd/
 	$(INSTALL_DATA) ./files/ns.dedalo.json $(1)/usr/share/rpcd/acl.d/
 	$(INSTALL_BIN) ./files/ns.power $(1)/usr/libexec/rpcd/
@@ -166,6 +169,7 @@ define Package/ns-api/install
 	$(INSTALL_BIN) ./files/pre-commit/update-objects.py $(1)/usr/libexec/ns-api/pre-commit
 	$(INSTALL_BIN) ./files/post-commit/configure-netifyd.py $(1)/usr/libexec/ns-api/post-commit
 	$(INSTALL_BIN) ./files/post-commit/reload-ipsets.py $(1)/usr/libexec/ns-api/post-commit
+	$(INSTALL_BIN) ./files/remove-pppoe-keepalive $(1)/usr/share/ns-api
 endef
  
 $(eval $(call BuildPackage,ns-api))

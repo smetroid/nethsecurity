@@ -43,24 +43,110 @@ api-cli ns.talkers list --data '{"limit": 1}'
 Response:
 ```json
 {
-  "talkers": [
-    {
-      "mac": "40:62:31:19:05:22",
-      "totals": {
-        "download": 21666,
-        "upload": 483727,
-        "packets": 643,
-        "bandwidth": 16846.433333333334,
-        "bandwiddh_h": "16.5 KB/s"
+  "talkers": {
+    "top_hosts": [
+      {
+        "mac": "40:62:31:19:05:22",
+        "totals": {
+          "download": 21666,
+          "upload": 483727,
+          "packets": 643,
+          "bandwidth": 16846.433333333334,
+          "bandwiddh_h": "16.5 KB/s"
+        },
+        "apps": {
+          "0.netify.unclassified": 0,
+          "10334.netify.nethserver": 505393
+        },
+        "ip": "192.168.5.211",
+        "host": "nethvoice.nethesis.it"
+      }
+    ],
+    "top_apps": [
+      {
+        "name": "10974.netify.meta-cdn",
+        "value": 149845562
       },
-      "apps": {
-        "0.netify.unclassified": 0,
-        "10334.netify.nethserver": 505393
+      {
+        "name": "201.netify.instagram",
+        "value": 63817984
       },
-      "ip": "192.168.5.211",
-      "host": "nethvoice.nethesis.it"
-    }
-  ]
+      {
+        "name": "10334.netify.nethserver",
+        "value": 31100837
+      },
+      {
+        "name": "0.netify.unclassified",
+        "value": 10138483
+      },
+      {
+        "name": "126.netify.google",
+        "value": 6314644
+      },
+      {
+        "name": "119.netify.facebook",
+        "value": 4381644
+      },
+      {
+        "name": "10034.netify.hubspot",
+        "value": 2430153
+      },
+      {
+        "name": "156.netify.spotify",
+        "value": 1139379
+      },
+      {
+        "name": "10002.netify.github",
+        "value": 1114048
+      },
+      {
+        "name": "10041.netify.google-ads",
+        "value": 791534
+      }
+    ],
+    "top_protocols": [
+      {
+        "name": "QUIC",
+        "value": 218488582
+      },
+      {
+        "name": "HTTP/S",
+        "value": 24080025
+      },
+      {
+        "name": "STUN",
+        "value": 21171007
+      },
+      {
+        "name": "SYSLOG/S",
+        "value": 5880696
+      },
+      {
+        "name": "HTTP",
+        "value": 2545062
+      },
+      {
+        "name": "Unknown",
+        "value": 851164
+      },
+      {
+        "name": "SSH",
+        "value": 684836
+      },
+      {
+        "name": "WireGuard",
+        "value": 600214
+      },
+      {
+        "name": "TLS",
+        "value": 507668
+      },
+      {
+        "name": "OpenVPN",
+        "value": 467074
+      }
+    ]
+  }
 }
 ```
 
@@ -269,6 +355,7 @@ Response:
     "forward": "REJECT",
     "masq": "1",
     "mtu_fix": "1",
+    "log": "1",
     "network": [
       "wan6",
       "RED_2",
@@ -541,7 +628,7 @@ Response:
 Create zone:
 
 ```
-api-cli ns.firewall create_zone --data '{"name": "cool_zone", "input": "DROP", "forward": "DROP", "traffic_to_wan": true, "forwards_to": [], "forwards_from": ["lan"]}'
+api-cli ns.firewall create_zone --data '{"name": "cool_zone", "input": "DROP", "forward": "DROP", "traffic_to_wan": true, "forwards_to": [], "forwards_from": ["lan"], "log": true}'
 ```
 
 Response:
@@ -557,7 +644,7 @@ Response:
 Edit zone:
 
 ```
-api-cli ns.firewall edit_zone --data '{"name": "cool_zone", "input": "ACCEPT", "forward": "REJECT", "traffic_to_wan": false, "forwards_to": ["lan"], "forwards_from": ["guest"]}'
+api-cli ns.firewall edit_zone --data '{"name": "cool_zone", "input": "ACCEPT", "forward": "REJECT", "traffic_to_wan": false, "forwards_to": ["lan"], "forwards_from": ["guest"], "log": false}'
 ```
 
 Response:
@@ -611,82 +698,16 @@ Example:
 
 Each array contains year, month and day.
 
-### details
-
-Get report details for a client in the given date:
-```
-api-cli ns.dpireport details --data '{"year": "2023", "month": "06", "day": "16", "client": "192.168.100.22"}'
-```
-
-Data not grouped by hour are a total for the whole day.
-
-Example:
-```json
-{
-  "hours": {
-    "00": {
-      "total": 4697332,
-      "protocol": {
-        "http/s": 4669084,
-        "ntp": 2700,
-        "icmp": 70
-      },
-      "application": {
-        "unknown": 38955,
-        "netify.nethserver": 41934,
-        "netify.reverse-dns": 226,
-      },
-      "host": {
-        "pool.ntp.org": 2700,
-        "urlhaus.abuse.ch": 882992,
-      }
-    },
-    ...
-    },
-    "11": {
-      "total": 930002,
-      "protocol": {
-        "http/s": 923080,
-        "netbios": 1614,
-      },
-      "application": {
-        "netify.internal-network": 793,
-        "netify.nethserver": 27024,
-        "unknown": 21930,
-      },
-      "host": {
-        "_http._tcp.local": 576,
-        "sambafax___nethservice._ipp._tcp.local": 217
-      }
-    },
-    ...
-    "23": {}
-  },
-  "total": 119058259,
-  "name": "server.test.org",
-  "protocol": {
-    "http/s": 74134684,
-    "netbios": 29590,
-    ...
-  },
-  "host": {
-    "nethservice": 29590,
-    "211.222.102.147.in-addr.arpa": 233,
-    ...
-  },
-  "application": {
-    "netify.internal-network": 13273,
-     ...
-  }
-}
-```
-
 ### summary
 
 Retrive a traffic summary for the given day:
 ```
-api-cli ns.dpireport summary --data '{"year": "2023", "month": "06", "day": "16"}'
+api-cli ns.dpireport summary --data '{"year": "2023", "month": "06", "day": "16", "limit": 10}'
 ```
+
+The `limit` field is optional and defaults to 10, it will limit the number of items in the `client`, `protocol`, `application` and `host` lists.
+Elements exceeding the limit will be grouped in a single item called `others`.
+If set to -1, all items will be returned.
 
 The summary contains network traffic from multiple hosts.
 Lists are sorted in descending order by the amount of traffic in bytes.
@@ -768,6 +789,15 @@ Example:
   ]
 }
 ```
+
+### summary-by-client
+
+Retrive a traffic summary for the given day limited to a single client (host on the local network):
+```
+api-cli ns.dpireport summary-by-client --data '{"year": "2023", "month": "06", "day": "16", "client": "192.168.2.2", "limit": 10}'
+```
+
+It has the same structure of the `summary` API.
 
 ## ns.ovpntunnel
 
@@ -1292,6 +1322,22 @@ Response example for a server in bridged mode:
 ```
 
 After `add-instance`, the `ns_description` field is empty. If the field is empty, the instance has never been edited from UI.
+
+### download_all_user_configuration
+
+Prepare a tar.gz archive with all user configuration
+```
+api-cli ns.ovpnrw download_all_user_configurations --data '{"instance": "ns_roadwarrior1"}'
+```
+
+Response example:
+```json
+{
+  "archive_path": "/var/run/ns-api-server/download/ns_roadwarrior1_user_configurations.tar.gz"
+}
+```
+
+The archive can be download using `scp` or the files APIs of nethsecurtity-api-server
 
 ### list-users
 
@@ -5555,8 +5601,23 @@ Response example:
 ### edit-settings
 
 Configure banip settings:
-```
-api-cli ns.threatshield edit-settings --data '{"enabled": true}'
+
+- `enabled`: disable or enable banip (true or false).
+- `ban_logprerouting`: Log suspicious packets in the prerouting chain (true or false).
+- `ban_loginput`: Log suspicious packets in the WAN-input chain (true or false).
+- `ban_logforwardwan`: Log suspicious packets in the WAN-forward chain (true or false).
+- `ban_logforwardlan`: Log suspicious packets in the LAN-forward chain (true or false).
+- `ban_loglimit`: Enable or disable scanning of logfiles (true or false).
+- `ban_logcount`: Specify how many times an IP must appear in the log to be considered suspicious (integer).
+- `ban_logterm`: List of regex entries for logfile parsing (list of strings).
+- `ban_icmplimit`: Enable or disable icmp DoS detection (true or false).
+- `ban_synlimit`: Enable or disable syn DoS detection (true or false).
+- `ban_udplimit`: Enable or disable udp DoS detection (true or false).
+- `ban_nftexpiry`: Set the ban expiry, format is `1d` for 1 day, `2h` for 2 hours, `1m` for 1 minute. (string)
+
+
+```bash
+api-cli ns.threatshield edit-settings --data '{"enabled": true, "ban_logprerouting": true, "ban_loginput": true, "ban_logforwardwan": true, "ban_logforwardlan": true, "ban_loglimit": false, "ban_logcount": 5, "ban_logterm": ["regex1", "regex2"], "ban_icmplimit": true, "ban_synlimit": true, "ban_udplimit": true, "ban_nftexpiry": "1d"}'
 ```
 
 Response example:
@@ -5640,6 +5701,71 @@ Response example:
 
 It can raise the following validation errors:
 - `address_not_found` if the address is not inside the allow list
+
+### list-blocked
+
+List blocked addresses from the local blocklist:
+```
+api-cli ns.threatshield list-blocked
+```
+
+Response example:
+```json
+{
+  "data": [
+    {
+      "address": "10.10.0.221/24",
+      "description": "WAN"
+    },
+    {
+      "address": "52:54:00:6A:50:BF",
+      "description": "my MAC address"
+    }
+  ]
+}
+```
+
+### add-blocked
+
+Add an address to the block list:
+```
+api-cli ns.threatshield add-blocked --data '{"address": "1.2.3.4", "description": "my block1"}'
+```
+
+The `address` field can be an IPv4/IPv6, a CIDR, a MAC or host name
+
+Response example:
+```json
+{"message": "success"}
+```
+
+It can raise the following validation errors:
+- `address_already_present` if the address is already inside the block list
+
+### edit-blocked
+
+Change the description of an address already inside the block list:
+```
+api-cli ns.threatshield edit-blocked --data '{"address": "1.2.3.4", "description": "my new desc"}'
+```
+
+It can raise the following validation errors:
+- `address_not_found` if the address is not inside the allow list
+
+### delete-blocked
+
+Delete an address from the block list:
+```
+api-cli ns.threatshield delete-blocked --data '{"address": "1.2.3.4"}'
+```
+
+Response example:
+```json
+{"message": "success"}
+```
+
+It can raise the following validation errors:
+- `address_not_found` if the address is not inside the block list
 
 ### dns-list-blocklist
 
@@ -6419,7 +6545,9 @@ Response example with connected machine:
   "server": "https://controller.nethsecurity.org",
   "unit_name": "NethSec",
   "unit_id": "94615a9e-2fae-4ac4-91b0-6c03e624ab48",
-  "tls_verify": false
+  "tls_verify": false,
+  "push_status": "enabled",
+  "push_last_sent": 1727703300
 }
 ```
 
@@ -6431,13 +6559,17 @@ Response example for an unconfigured machine:
   "server": null,
   "unit_name": "NethSec",
   "unit_id": "",
-  "tls_verify": false
+  "tls_verify": true,
+  "push_status": "disabled",
+  "push_last_sent": -1
 }
 ```
 
 Possible values for `status` are `connected`, `unregistered` and `pending`.
 `address` is null if the status is `unregistered` or `pending`.
 `server` is null if the status is `unregistered`.
+`push_status` can be `enabled` or `disabled`, it's `enabled` if the server has a valid subscription; if enabled, `push_last_sent` contains the timestamp of last
+time the unit has pushed data to the controller.
 If `unit_name` has not been previously set, default value is the hostname of the machine.
 The `unit_id` is generated from the controller and contained inside the join_code.
 
@@ -6585,6 +6717,196 @@ Response example:
 
 The API does not fail if the key is not present but it will not delete it.
 It can raise the error `invalid_ssh_key` if the key is not a valid SSH key.
+
+
+### dump-mwan-events
+
+Dump MWAN events to the controller as a time series.
+The function reads all data from last 20 minutes. If the firewall has been rebooted, try to read the whole log.
+Returned JSON output can be sent to the controller.
+Example:
+```
+api-cli ns.controller dump-mwan-events
+```
+
+```json
+{
+  "data": [
+    {
+      "timestamp": 1724221238,
+      "wan": "wan",
+      "interface": "eth1",
+      "event": "offline"
+    },
+    {
+      "timestamp": 1724221243,
+      "wan": "wan",
+      "interface": "eth1",
+      "event": "online"
+    }
+  ]
+}
+```
+
+### dumpt-ts-attacks
+
+Dump ThreatShield attacks to the controller as a time series.
+An attack is an IP blocked due to a temporary ban (fail2ban behavior).
+The function reads all data from last 20 minutes. If the firewall has been rebooted, try to read the whole log.
+Returned JSON output can be sent to the controller.
+
+Output example:
+```json
+{
+  "data": [
+    {
+      "timestamp": 1724230611,
+      "ip": "79.10.245.41"
+    },
+    {
+      "timestamp": 1724230781,
+      "ip": "79.10.245.41"
+    }
+  ]
+}
+```
+
+### dump-ts-malware
+
+Dump ThreatShield malware to the controller as a time series.
+A malware is an IP blocked due to a blocklist.
+The function reads all data from last 20 minutes. If the firewall has been rebooted, try to read the whole log.
+
+Output example:
+```json
+{
+  "data": [
+    {
+      "timestamp": 1724230020,
+      "src": "123.13.237.76",
+      "dst": "192.168.5.3",
+      "category": "nethesislvl3v4",
+      "chain": "fwd-wan"
+    },
+    {
+      "timestamp": 1724230021,
+      "src": "218.21.220.12",
+      "dst": "192.168.5.3",
+      "category": "nethesislvl3v4",
+      "chain": "fwd-wan"
+    }
+  ]
+}
+```
+
+### dump-openvpn-connections
+
+Dump OpenVPN connections to the controller as a time series.
+The function reads all data from last 20 minutes. If the firewall has been rebooted, data are not available.
+Returned JSON output can be sent to the controller.
+
+Output example:
+```json
+{
+  "data": [
+    {
+      "timestamp": 1724231288,
+      "instance": "ns_roadwarrior1",
+      "common_name": "giacomo",
+      "virtual_ip_addr": "10.9.9.4",
+      "remote_ip_addr": "1.2.3.33",
+      "start_time": 1724231288,
+      "duration": null,
+      "bytes_received": null,
+      "bytes_sent": null
+    }
+  ]
+}
+```
+
+### dump-dpi-stats
+
+Dump DPI stats to the controller as a time series.
+The function reads all data from last 20 minutes. If the firewall has been rebooted, data are not available.
+Returned JSON output can be sent to the controller.
+
+Output example:
+```json
+{
+  "data": [
+    {
+      "timestamp": 1724198400,
+      "client_address": "fe80::fc54:ff:fe6a:4aa1",
+      "client_name": "host1.local"
+      "protocol": "icmpv6",
+      "bytes": 70
+    },
+    {
+      "timestamp": 1724198400,
+      "client_address": "fe80::fc54:ff:fe6a:4aa1",
+      "client_name": "host1.local"
+      "bytes": 101
+    },
+    {
+      "timestamp": 1724198400,
+      "client_address": "fe80::fc54:ff:fe6a:4aa1",
+      "client_name": "host1.local"
+      "application": "unknown",
+      "bytes": 171
+    }
+  ]
+}
+```
+
+### dump-openvpn-config
+
+Dump OpenVPN configuration to the controller.
+Returned JSON output can be sent to the controller.
+
+Output example:
+```json
+{
+  "data": [
+    {
+      "instance": "ns_roadwarrior1",
+      "name": "myserver1",
+      "device": "tunrw1",
+      "type": "rw",
+    },
+    {
+      "instance": "ns_tunsrv1",
+      "name": "mytunsrv",
+      "device": "tunsrv1",
+      "type": "server",
+    }
+  ]
+}
+```
+
+The `type` field can be `rw` for roadwarrior, `server` for tunnel server, or `client` for tunnel client.
+
+### dump-wan-config
+
+Dump WAN configuration to the controller.
+Returned JSON output can be sent to the controller.
+
+Output example:
+```json
+{
+  "data": [
+    {
+      "interface": "wan",
+      "device": "eth1",
+      "status": "online"
+    },
+    {
+      "interface": "wan2",
+      "device": "eth2",
+      "status": "offline"
+    }
+  ]
+}
+```
 
 ## ns.scan
 
@@ -7022,3 +7344,172 @@ The output attribute `reboot_needed` tells if a reboot of the unit is required t
 - disabling a NAT helper
 
 If `enabled` is `false`, all parameter changes are ignored and not applied.
+
+## ns.report
+
+Generate data for reports. Some reports are cached.
+
+### tsip-malware-report
+
+Report the number of blocked IPs by Threat Shield IP using the blocklists.
+Data are searched from the last 24 hours, inside `/var/log/messages` and `/var/log/messages.1.gz` so data can be incomplete
+if the logs do not contain the full 24 hours.
+Result is cached for 15 minutes.
+Usage example:
+```
+api-cli ns.report tsip-malware-report
+```
+
+Output example:
+```json
+{"first_seen":1723154401,"malware_count":84816,"malware_by_hour":[[0,5695],[1,5351],[2,5470],[3,6187],[4,5892],[5,5268],[6,5168],[7,5457],[8,6447],[9,5573],[10,5479],[11,5112],[12,4969],[13,4917],[14,4879],[15,2952],[16,0],[17,0],[18,0],[19,0],[20,0],[21,0],[22,0],[23,0]],"malware_by_category":{"nethesislvl3v4":76899,"yoroimallvl2v4":6979,"yoroisusplvl2v4":122,"blocklistv4":335},"malware_by_chain":{"fwd-wan":32933,"inp-wan":51402}}
+```
+
+### tsip-attack-report
+
+Report the number of blocked IPs by Threat Shield IP using the regexp over the log (like fail2ban).
+Data are searched from the last 24 hours, inside `/var/log/messages` and `/var/log/messages.1.gz` so data can be incomplete
+if the logs do not contain the full 24 hours.
+Result is cached for 15 minutes.
+Usage example:
+```
+api-cli ns.report tsip-attack-report
+```
+
+Output example:
+```json
+{"first_seen": 1724021271, "attack_count": 149, "attack_by_ip": [["xx.xx.177.217", 30], ["xx.xx.60.242", 30], ], "attack_by_hour": [[0, 7], [1, 49], [2, 39], [3, 11], [4, 0], [5, 1], [6, 5], [7, 0], [8, 0], [9, 0], [10, 4], [11, 31], [12, 2], [13, 0], [14, 0], [15, 0], [16, 0], [17, 0], [18, 0], [19, 0], [20, 0], [21, 0], [22, 0], [23, 0]]}
+```
+
+### mwan-report
+
+Report the online/offline events for each wan.
+Data are searched from the last 24 hours, inside `/var/log/messages` and `/var/log/messages.1.gz` so data can be incomplete
+if the logs do not contain the full 24 hours.
+Result is cached for 5 minutes.
+Usage example:
+```
+api-cli ns.report mwan-report
+```
+
+Output example:
+```json
+{
+  "total_online": 5,
+  "total_offline": 3,
+  "events_by_wan": {
+    "wan": [
+      [
+        1723185855,
+        1
+      ],
+      [
+        1723198098,
+        0
+      ],
+    ],
+    "wan2": [
+      [
+        1723185858,
+        1
+      ],
+      [
+        1723197224,
+        0
+      ],
+      [
+        1723197354,
+        1
+      ],
+      [
+        1723198098,
+        0
+    ]
+  }
+}
+```
+
+The `events_by_wan` object can be used to generate a scattered chart. Each element of the array is a pair of `timestamp,event`.
+Where `event` is `1` when there is an `online` event, `0` otherwise.
+
+### ovpnrw-list-days
+
+OpenVPN stores data inside a sqlite datbase which is lost upon reboot. This command will list all the days where data is available.
+Usage example:
+```
+api-cli ns.report ovpnrw-list-days --data '{"instance": "ns_roadwarrior1"}'
+```
+
+Output example:
+```json
+{
+  "days": [
+    "2024-08-07",
+    "2024-08-08",
+    "2024-08-09"
+  ]
+}
+```
+
+### ovpnrw-clients-by-day
+
+Report the number of clients connected to the OpenVPN server for a specific day.
+Usage example:
+```
+api-cli ns.report ovpnrw-clients-by-day --data '{"instance": "ns_roadwarrior1", "day": "2024-08-07"}'
+```
+
+Output example:
+```json
+{
+  "clients": [
+    {
+      "common_name": "goofy",
+      "virtual_ip_addr": "10.9.9.2",
+      "remote_ip_addr": "93.41.xx.xx",
+      "start_time": 1723119680,
+      "duration": 2766,
+      "bytes_received": 5532614,
+      "bytes_sent": 15296388
+    }
+  ]
+  ```
+
+### ovpnrw-count-clients-by-hour
+
+Report the number of clients connected to the OpenVPN server for a specific day, aggregated by hour.
+Usage example:
+```
+api-cli ns.report ovpnrw-count-clients-by-hour --data '{"instance": "ns_roadwarrior1", "day": "2024-08-07"}'
+```
+
+Output example:
+```json
+{"hours":[["00",0],["01",0],["02",0],["03",0],["04",0],["05",0],["06",0],["07",0],["08",0],["09",0],["10",0],["11",0],["12",2],["13",0],["14",0],["15",0],["16",0],["17",0],["18",0],["19",0],["20",1],["21",0],["22",1],["23",0]]}
+```
+
+### ovpnrw-bytes-by-hour
+
+Report the total traffic of clients connected to the OpenVPN server for a specific day, aggregated by hour.
+Usage example:
+```
+api-cli ns.report ovpnrw-bytes-by-hour --data '{"instance": "ns_roadwarrior1", "day": "2024-08-07"}'
+```
+
+Output example:
+```json
+{"hours":[["00",0],["01",0],["02",0],["03",0],["04",0],["05",0],["06",0],["07",0],["08",0],["09",0],["10",0],["11",0],["12",7898738814],["13",0],["14",0],["15",0],["16",0],["17",0],["18",0],["19",0],["20",11086216],["21",0],["22",43658241],["23",0]]}
+```
+
+### ovpnrw-bytes-by-hour-and-user
+
+Report the total traffic of a specific client connected to the OpenVPN server for a specific day, aggregated by hour.
+Usage example:
+```
+api-cli ns.report ovpnrw-bytes-by-hour-and-user --data '{"instance": "ns_roadwarrior1", "day": "2024-08-07", "user": "goofy"}'
+```
+
+Output example:
+```json
+{"hours":[["00",0],["01",0],["02",0],["03",0],["04",0],["05",0],["06",0],["07",0],["08",0],["09",0],["10",0],["11",0],["12",7877909812],["13",0],["14",0],["15",0],["16",0],["17",0],["18",0],["19",0],["20",0],["21",0],["22",0],["23",0]]}
+```

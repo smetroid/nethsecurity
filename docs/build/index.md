@@ -81,7 +81,7 @@ During the start-up, the container will:
 
 The `run` script behavior can be changed using the following environment variables:
 
-- `IMAGE_TAG`: specify the image tag of the builder; if not set default is `latest`
+- `IMAGE_TAG`: specify the image tag of the builder; if not set default is `latest`, the special value `snapshot` will build a snapshot from the OpenWrt main branch
 - `USIGN_PUB_KEY` and `USIGN_PRIV_KEY`: see [package signing section](#package-signing)
    with the given keys
 - `NETIFYD_ACCESS_TOKEN`: GitLab private access token; if set, download and compile netifyd closed
@@ -104,6 +104,40 @@ TAG=$(podman images --quiet ghcr.io/nethserver/nethsecurity-builder:latest)
 podman tag $TAG ghcr.io/nethserver/nethsecurity-builder:$IMAGE_TAG
 ./run
 ```
+
+### Build locally for a release
+
+If you need to build some packages locally for a release, make sure the following environment variables are set:
+- `USIGN_PUB_KEY` and `USIGN_PRIV_KEY`: make sure to read the whole key file using `cat` and set the content as the environment variable
+- `NETIFYD_ACCESS`: required to download and compile netifyd closed source plugins
+
+Then execute the `run` script:
+```
+NETIFYD_ACCESS_TOKEN=xxx USIGN_PUB_KEY=$(cat nethsecurity-pub.key) USIGN_PRIV_KEY=$(cat nethsecurity-priv.key) ./run 
+```
+
+See the [manual release process](../development_process/#manually-releasing-packages) for more info.
+
+### Build locally a snapshot
+
+A snapshot is a build that is based on OpenWrt main branch.
+
+To build a snapshot locally, follow these steps:
+
+1. Build the image builder based on main branch:
+   ```
+   pushd builder
+   OWRT_VERSION=snapshot ./build-builder
+   popd
+   ```
+   This will create an image named `ghcr.io/nethserver/nethsecurity-builder:snapshot` that will be used to build the output image
+
+2. Build the image using the builder:
+    ```
+    IMAGE_TAG=snapshot ./run
+    ```
+    Since multiple versions of OpenWrt can't be built using the same directory, the snaphost build will use
+    different podman volume named with `_snapshot` suffix, like `nethsecurity-build_dir_snapshot`
 
 ## Versioning
 
@@ -157,7 +191,40 @@ When the builder of the image has been completed, make sure to:
   podman volume rm nethsecurity-build_dir nethsecurity-staging_dir
   ```
 - rebuild the image using the latest builder container image
-- rebuild the documentation to update the download link: https://readthedocs.org/projects/nethsecurity-docs/
+
+## Release new image checklist
+
+When releasing a new image, follow these steps:
+
+1. **Tag the stable release:**
+  - Example: `23.05.5-ns.1.3.0`
+
+2. **Update the changelog:**
+  - Include the date of release and relevant changes inside the [administrator manual](https://github.com/NethServer/nethsecurity-docs).
+
+3. **Merge all documentation PRs:**
+  - Ensure all pending documentation pull requests are merged.
+
+4. **Execute documentation build:**
+  - Execute the build of the documentation on [Read the Docs](https://readthedocs.org/projects/nethsecurity-docs/) to include latest changes
+    and update the downaload links.
+
+5. **Close all open issues:**
+  - Ensure all issues related to the release are closed.
+
+6. **Close the milestone:**
+  - Close the relevant milestone on [GitHub](https://github.com/NethServer/nethsecurity/milestones).
+
+7. **Archive completed items:**
+  - Archive all items in the "Done" column of the [project board](https://github.com/orgs/NethServer/projects/10/views/2).
+
+8. **Release NethSecurity Controller:**
+  - Release the version of NethSecurity Controller on NethServer 8, if applicable.
+
+9. **Announce the release:**
+  - Post English announcement on [NethServer Community](https://community.nethserver.org).
+  - Post Italian announcement on [Nethesis Partner Portal](https://partner.nethesis.it).
+
 
 ## Image configuration
 
@@ -234,21 +301,6 @@ released by OpenWrt.
 
 To replace an upstream package just create a new package with the same
 name inside the `packages` directory.
-
-### LuCI web interface fork
-
-Some configurations should not be changed from LuCI to avoid problems on the underlying system.
-This is the reason why, during the build, a fork of LuCI will be used.
-The fork is hosted at the following [repository](https://github.com/NethServer/luci).
-
-{% assign vparts = site.version | split:'.' %}
-Please make changes only to the `nethsec-{{ vparts | slice: 0,2 | join:'.' }}` branch.
-
-LuCI fork is updated on every build run.
-The original GIT commit used during the build can be found with this command:
-```
-opkg info luci | grep Version | cut -d'-' -f3
-```
 
 ### Package signing
 
@@ -365,7 +417,7 @@ make -j $(nproc) package/feeds/nethsecurity/netify-flow-actions/{download,compil
 
 ## Builder image
 
-The `nethserver/nethsecurity-builder` is a container image to build nethsecurity.
+The `nethserver/nethsecurity-builder` is a container image to build NethSecurity.
 It's based on `debian-slim` and contains an OpenWrt build environment ready to be used.
 
 ### How to build it

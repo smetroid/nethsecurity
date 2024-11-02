@@ -110,6 +110,8 @@ explicit-exit-notify 1
 remote ${host} ${port} udp
 dev tun-nsplug
 tls-client
+script-security 2
+route-up /usr/sbin/ns-controller-push-info
 <ca>
 ${ca}
 </ca>
@@ -136,6 +138,11 @@ if [ "$(uci -q get rsyslog.promtail)" == "" ]; then
     grep -qF '$PreserveFQDN on' /etc/rsyslog.conf || echo '$PreserveFQDN on' >> /etc/rsyslog.conf
     /etc/init.d/rsyslog restart
     sleep 5 # wait for rsyslog
+fi
+
+# Send data to controller every 15 minutes, only if subscription is enabled
+if [ ! -z "$subscription_type" ]; then
+    grep -qF '/usr/bin/ns-push-reports' /etc/crontabs/root || echo '*/15 * * * * sleep $(( RANDOM % 60 )); /usr/bin/ns-push-reports' >> /etc/crontabs/root && /etc/init.d/cron restart
 fi
 
 # Start the VPN
